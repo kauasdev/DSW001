@@ -19,51 +19,51 @@ import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 
 
-
 @RestController
 @RequestMapping("/pessoas")
 public class PessoaController {
-private final PessoaService pessoaService;
-public PessoaController(PessoaService pessoaService) {
-this.pessoaService = pessoaService;
-}
+	private final PessoaService pessoaService;
 
-@GetMapping
-public List<Pessoa> obterPessoas() {
-return pessoaService.obterPessoas();
-}
+	public PessoaController(PessoaService pessoaService) {
+		this.pessoaService = pessoaService;
+	}
 
-@GetMapping("/{username}")
-public Pessoa obterPessoa(@PathVariable("username") String username) {
-Optional<Pessoa> optPessoa = pessoaService.obterPessoa(username);
-if (optPessoa.isEmpty()) {
-throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-}
-return optPessoa.get();
-}
+	@GetMapping
+	public List<Pessoa> obterPessoas() {
+		return pessoaService.obterPessoas();
+	}
 
-@PostMapping("/sem-validacao")
-public ResponseEntity<?> incluirNovo(@RequestBody Pessoa pessoa){
-    pessoaService.incluirNovaPessoa(pessoa);
-    URI location = ServletUriComponentsBuilder
-    .fromCurrentContextPath()
-    .path("/pessoas/${username}")
-    .buildAndExpand(pessoa.getUsername())
-    .toUri();
-    return ResponseEntity.created(location).build();
-}
+	@GetMapping("/{username}")
+	public Pessoa obterPessoa(@PathVariable("username") String username) {
+		Optional<Pessoa> optPessoa = pessoaService.obterPessoa(username);
+		if (optPessoa.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+		return optPessoa.get();
+	}
 
-@PostMapping
-public ResponseEntity<?> incluirNovoComValidacao(@RequestBody @Valid Pessoa pessoa){
-    pessoaService.incluirNovaPessoa(pessoa);
-    URI location = ServletUriComponentsBuilder
-    .fromCurrentContextPath()
-    .path("/pessoas/{username}")
-    .buildAndExpand(pessoa.getUsername())
-    .toUri();
+	@PostMapping("/sem-validacao")
+	public ResponseEntity<?> incluirNovo(@RequestBody Pessoa pessoa) {
+		pessoaService.incluirNovaPessoa(pessoa);
+		URI location = ServletUriComponentsBuilder
+			.fromCurrentContextPath()
+			.path("/pessoas/${username}")
+			.buildAndExpand(pessoa.getUsername())
+			.toUri();
+		return ResponseEntity.created(location).build();
+	}
 
-    return ResponseEntity.created(location).build();
-}
+	@PostMapping
+	public ResponseEntity<?> incluirNovoComValidacao(@RequestBody @Valid Pessoa pessoa) {
+		pessoaService.incluirNovaPessoa(pessoa);
+		URI location = ServletUriComponentsBuilder
+			.fromCurrentContextPath()
+			.path("/pessoas/{username}")
+			.buildAndExpand(pessoa.getUsername())
+			.toUri();
+
+		return ResponseEntity.created(location).build();
+	}
 
 
 }
