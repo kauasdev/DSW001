@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dados Pessoais</title>
 </head>
+
 <body>
+<<<<<<< HEAD
 <h1>Pessoas</h1>
 <section>
   <h2>Lista de Pessoas</h2>
@@ -48,10 +51,90 @@
       for (const p of pessoas) {
         tbody.insertAdjacentHTML('beforeend',
           `<tr>
+=======
+  <h1>Pessoas</h1>
+  <section>
+    <h2>Lista de Pessoas</h2>
+    <button id="btnListar">Carregar lista</button>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Username</th>
+          <th>E-mail</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="corpoTabela"></tbody>
+    </table>
+  </section>
+  <hr />
+  <section id="secaoEdicao" style="display:none">
+    <h2>Editar Pessoa: <span id="editUsername"></span></h2>
+    <form id="formEdicao">
+      <div>
+        <label for="editNome">Nome:</label>
+        <input type="text" id="editNome" required />
+      </div>
+      <div>
+        <label for="editEmail">E-mail:</label>
+        <input type="email" id="editEmail" required />
+      </div>
+      <div>
+        <label for="editTelefone">Telefone:</label>
+        <input type="text" id="editTelefone" />
+      </div>
+      <div>
+        <label for="editDataNascimento">Data de Nascimento:</label>
+        <input type="date" id="editDataNascimento" required />
+      </div>
+      <div>
+        <strong>Conhecimentos:</strong><br />
+        <label><input type="checkbox" name="editConhecimentos" value="Java" /> Java</label><br />
+        <label><input type="checkbox" name="editConhecimentos" value="Spring Boot" /> Spring Boot</lab> <label><input
+              type="checkbox" name="editConhecimentos" value="JavaScript" /> JavaScript</label> <label><input
+              type="checkbox" name="editConhecimentos" value="Angular" /> Angular</label><br /> <label><input
+              type="checkbox" name="editConhecimentos" value="React" /> React</label>
+      </div>
+      <button type="submit">Salvar alterações</button>
+      <button type="button" onclick="fecharFormEdicao()">Cancelar</button>
+    </form>
+  </section>
+  <section>
+    <h2>Buscar pessoa pelo username</h2>
+    <button id="btnFulano">Carregar Fulano</button>
+    <button id="btnCiclano">Carregar Ciclano</button>
+    <button id="btnBeltrana">Carregar Beltrana</button>
+    <article>
+      <h3 id="nome">Nome</h3>
+      <p>ID: <strong id="id"></strong></p>
+      <p>Username: <strong id="username"></strong></p>
+      <p>E-mail: <strong id="email"></strong></p>
+      <p>Telefone: <strong id="telefone"></strong></p>
+      <p>Data de Nascimento: <strong id="dataNascimento"></strong></p>
+    </article>
+  </section>
+  <script>
+    // Buscar e exibir a lista de pessoas
+    document.getElementById('btnListar').addEventListener('click', async () => {
+      try {
+        const httpResp = await fetch('/pessoas');
+        if (!httpResp.ok) {
+          throw new Error('Erro HTTP ' + httpResp.status);
+        }
+        const pessoas = await httpResp.json();
+        const tbody = document.getElementById('corpoTabela');
+        tbody.innerHTML = '';
+        for (const p of pessoas) {
+          tbody.insertAdjacentHTML('beforeend',
+            `<tr>
+>>>>>>> 88b97f85c9fdd8edfc102782947a11211831ee85
  <td>${p.id}</td>
  <td>${p.nome}</td>
  <td>${p.username}</td>
  <td>${p.email}</td>
+<<<<<<< HEAD
  </tr>`
         );
       }
@@ -81,5 +164,107 @@
   document.getElementById('btnCiclano').addEventListener('click', () => getPessoa('ciclano'));
   document.getElementById('btnBeltrana').addEventListener('click', () => getPessoa('beltrana'));
 </script>
+=======
+ <td>
+ <button onclick="abrirFormEdicao('${p.username}')">Editar</button>
+ <button onclick="excluirPessoa('${p.username}')">Excluir</button>
+ </td>
+ </tr>`
+          );
+        }
+      } catch (err) {
+        alert('Erro ao carregar lista: ' + err.message);
+      }
+    });
+    // Buscar e exibir dados de uma pessoa pelo username
+    async function getPessoa(username) {
+      try {
+        const httpResp = await fetch(`/pessoas/${username}`);
+        if (!httpResp.ok) {
+          throw new Error('Erro HTTP ' + httpResp.status);
+        }
+        const p = await httpResp.json();
+        document.getElementById('nome').textContent = p.nome;
+        document.getElementById('id').textContent = p.id;
+        document.getElementById('username').textContent = p.username;
+        document.getElementById('email').textContent = p.email;
+        document.getElementById('telefone').textContent = p.telefone;
+        document.getElementById('dataNascimento').textContent = p.dataNascimento;
+      } catch (err) {
+        alert('Erro ao buscar pessoa: ' + err.message);
+      }
+    }
+    document.getElementById('btnFulano').addEventListener('click', () => getPessoa('fulano'));
+    document.getElementById('btnCiclano').addEventListener('click', () => getPessoa('ciclano'));
+    document.getElementById('btnBeltrana').addEventListener('click', () => getPessoa('beltrana'));
+
+    // Busca os dados atuais e pré-preenche o formulário de edição
+    async function abrirFormEdicao(username) {
+      const httpResp = await fetch(`/pessoas/${username}`);
+      if (!httpResp.ok) {
+        alert('Não foi possível carregar os dados para edição.');
+        return;
+      }
+      const p = await httpResp.json();
+      document.getElementById('editUsername').textContent = username;
+      document.getElementById('editNome').value = p.nome;
+      document.getElementById('editEmail').value = p.email;
+      document.getElementById('editTelefone').value = p.telefone ?? '';
+      document.getElementById('editDataNascimento').value = p.dataNascimento;
+      // Marca apenas os checkboxes que a pessoa já possui
+      const checkboxes = document.querySelectorAll('[name="editConhecimentos"]');
+      for (const cb of checkboxes) {
+        cb.checked = p.conhecimentos && p.conhecimentos.includes(cb.value);
+      }
+      // Armazena o username no formulário para usar no submit
+      document.getElementById('formEdicao').dataset.username = username;
+      document.getElementById('secaoEdicao').style.display = 'block';
+    }
+    function fecharFormEdicao() {
+      document.getElementById('secaoEdicao').style.display = 'none';
+    }
+    document.getElementById('formEdicao').addEventListener('submit', async (evt) => {
+      evt.preventDefault();
+      const username = evt.target.dataset.username;
+      const conhecimentos = [];
+      for (const cb of document.querySelectorAll('[name="editConhecimentos"]:checked')) {
+        conhecimentos.push(cb.value);
+      }
+      const dados = {
+        nome: document.getElementById('editNome').value,
+        email: document.getElementById('editEmail').value,
+        telefone: document.getElementById('editTelefone').value,
+        dataNascimento: document.getElementById('editDataNascimento').value,
+        conhecimentos,
+      };
+      const resp = await fetch(`/pessoas/${username}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados),
+      });
+      if (resp.ok) {
+        alert('Pessoa alterada com sucesso!');
+        fecharFormEdicao();
+        document.getElementById('btnListar').click(); // recarrega a tabela
+      } else {
+        alert('Erro ao alterar: HTTP ' + resp.status);
+      }
+    });
+    async function excluirPessoa(username) {
+      const confirmado = window.confirm(
+        `Deseja realmente excluir "${username}"?\nEsta ação não pode ser desfeita.`
+      );
+      if (!confirmado) return;
+      const resp = await fetch(`/pessoas/${username}`, { method: 'DELETE' });
+      if (resp.ok) {
+        alert('Pessoa excluída com sucesso!');
+        document.getElementById('btnListar').click(); // recarrega a tabela
+      } else {
+        alert('Erro ao excluir: HTTP ' + resp.status);
+      }
+    }
+  </script>
+>>>>>>> 88b97f85c9fdd8edfc102782947a11211831ee85
 </body>
+
 </html>
