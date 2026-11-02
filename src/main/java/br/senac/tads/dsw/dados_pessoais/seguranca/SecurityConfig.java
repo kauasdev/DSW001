@@ -10,18 +10,30 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
 
 import java.util.List;
 
+
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // habilita @PreAuthorize e @PostAuthorize nos controllers
 public class SecurityConfig {
+
+	private final JwtFilter jwtFilter;
+
+	public SecurityConfig(JwtFilter jwtFilter) {
+		this.jwtFilter = jwtFilter;
+	}
+
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
@@ -57,15 +69,29 @@ public class SecurityConfig {
 
 			.authorizeHttpRequests(auth -> auth
 
-				.requestMatchers(HttpMethod.POST, "/login").permitAll()
+					.requestMatchers(HttpMethod.POST, "/login").permitAll()
 
-				.requestMatchers("/h2-console/**").permitAll()
+					.requestMatchers("/h2-console/**").permitAll()
 
-				.requestMatchers("/swagger-ui.html", "/swagger-ui/**","/v3/api-docs/**")
-				.permitAll()
+					.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
+					.permitAll()
+					// 2) ADICIONAR ESTAS LINHAS NO CÓDIGO EXISTENTE
+					// /me e os endpoints de acesso exigem autenticação (cobertos por anyRequest)
+					.requestMatchers("/me").authenticated()
+					// Permitir acesso aos arquivos das telas - antecipando config da etapa 7.7
+					.requestMatchers("/*.html", "/*.css", "/*.js").permitAll()
 
-				.anyRequest().authenticated()
-			);
+					.anyRequest().authenticated()
+					// Adicionar dentro de authorizeHttpRequests, antes de .anyRequest().authenticated():
+					// Leitura de pessoas: público
+					.requestMatchers(HttpMethod.GET, "/pessoas", "/pessoas/**").permitAll()
+					// Escrita exige autenticação (o @PreAuthorize no controller exigirá ROLE_ADMIN)
+					.requestMatchers(HttpMethod.POST, "/pessoas", "/pessoas/**").authenticated()
+					.requestMatchers(HttpMethod.PUT, "/pessoas/**").authenticated()
+					.requestMatchers(HttpMethod.DELETE, "/pessoas/**").authenticated()
+			)
+			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
 
 		return http.build();
 	}
@@ -81,8 +107,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	@SuppressWarnings("deprecation")
 	public PasswordEncoder passwordEncoder() {
-		return NoOpPasswordEncoder.getInstance();
+		return new BCryptPasswordEncoder();
 	}
 }
