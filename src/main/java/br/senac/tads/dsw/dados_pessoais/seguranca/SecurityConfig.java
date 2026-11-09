@@ -81,14 +81,16 @@ public class SecurityConfig {
 					// Permitir acesso aos arquivos das telas - antecipando config da etapa 7.7
 					.requestMatchers("/*.html", "/*.css", "/*.js").permitAll()
 
-					.anyRequest().authenticated()
-					// Adicionar dentro de authorizeHttpRequests, antes de .anyRequest().authenticated():
+
+
 					// Leitura de pessoas: público
 					.requestMatchers(HttpMethod.GET, "/pessoas", "/pessoas/**").permitAll()
 					// Escrita exige autenticação (o @PreAuthorize no controller exigirá ROLE_ADMIN)
 					.requestMatchers(HttpMethod.POST, "/pessoas", "/pessoas/**").authenticated()
 					.requestMatchers(HttpMethod.PUT, "/pessoas/**").authenticated()
 					.requestMatchers(HttpMethod.DELETE, "/pessoas/**").authenticated()
+					.requestMatchers("/error").permitAll()
+					.anyRequest().authenticated()
 			)
 			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -13,17 +13,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.prepost.PreAuthorize;
-
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*")
 @RestController
+@SecurityRequirement(name = "bearerJwt")
 @RequestMapping("/pessoas")
 public class PessoaController {
 	private final PessoaService pessoaService;
 
 	public PessoaController(PessoaService pessoaService) {
 		this.pessoaService = pessoaService;
+	}
+
+	@GetMapping
+	public List<PessoaDto> obterPessoas() {
+		return pessoaService.obterPessoas();
 	}
 
 	// GET /pessoas/busca?q=<termo>
@@ -47,7 +53,7 @@ public class PessoaController {
 		pessoaService.incluirNovaPessoa(pessoa);
 		URI location = ServletUriComponentsBuilder
 			.fromCurrentContextPath()
-			.path("/pessoas/${username}")
+			.path("/pessoas/{username}")
 			.buildAndExpand(pessoa.getUsername())
 			.toUri();
 		return ResponseEntity.created(location).build();
